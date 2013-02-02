@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <cublas.h>
 #include <cuda.h>
-#include <R.h>
 #define index(i,j,ld) (((j)*(ld))+(i))
 
 __global__ void copySubmatrix(float *gpu_X, float *sub_X, int *gpu_indices, int length_ind, int n, int p)
@@ -46,7 +45,7 @@ __global__ void checkKKT(float *gpu_grad, int *gpu_isActive, float lambda, int p
   }
 }
 
-
+//Extract ind-th element of gpu_vector
 __global__ void getKernel (float *gpu_vector, int ind, float *gpu_val)
 
 {
@@ -73,7 +72,8 @@ __global__ void softKernel(float *gpu_beta, float lambda, int p)
 
   
 extern "C"{
-  
+ 
+  //copies part of gpu_X into sub_X
   void subMatrix(float *gpu_X, float *sub_X, int *gpu_indices, int length_ind, int n, int p){
     int block_size = 256;
     int n_blocks = n*length_ind/block_size + ((n*length_ind)%block_size == 0 ? 0:1);
@@ -102,6 +102,7 @@ extern "C"{
     softKernel <<< block_size, n_blocks >>> (gpu_beta, lambda*step, p);
   }
 
+  //transfers gpu_vector[ind] into returnPtr
   void getIndVal(float *gpu_vector, int ind, float *returnPtr){
     int block_size = 1;
     int n_blocks = 1;
@@ -131,7 +132,7 @@ extern "C"{
  
     numActive[0] = 0;
 
-    cudaMemcpy(isActive, gpu_isActive, sizeof(int)*p[0],cudaMemcpyDeviceToHost);
+    cudaMemcpy(isActive, gpu_isActive, sizeof(int)*p[0], cudaMemcpyDeviceToHost);
 
     for(i=0; i<p[0];i++){
       if(isActive[i] != 0){
@@ -144,7 +145,7 @@ extern "C"{
     if(numActive[0] > oldNumActive){
       cont[0] = 1;
     }
-    cudaMemcpy(gpu_numActive, numActive, sizeof(int),cudaMemcpyHostToDevice);
+    cudaMemcpy(gpu_numActive, numActive, sizeof(int), cudaMemcpyHostToDevice);
 
 
     cudaMemcpy(gpu_indices, indices, sizeof(int)*p[0],cudaMemcpyHostToDevice);
@@ -165,7 +166,7 @@ extern "C"{
     cublasScopy(p[0], gpu_beta, 1, gpu_oldBeta, 1);
     
     /* Calculating the new fit */
-    cublasSgemv('n', n[0], p[0], 1, gpu_X, n[0], gpu_beta, 1, 0, gpu_fit,1);
+    cublasSgemv('n', n[0], p[0], 1, gpu_X, n[0], gpu_beta, 1, 0, gpu_fit, 1);
 
     /* Calculating new residuals */
     cublasScopy(n[0], gpu_y, 1, gpu_resid, 1);  // Copying y to resid
@@ -229,9 +230,7 @@ extern "C"{
   
   void singleSol(float *gpu_X, float *gpu_y, float *gpu_resid, float *gpu_fit, float *gpu_beta, float *gpu_oldBeta, float *gpu_grad, float *gpu_diff, float lambda, float *thresh, int *maxIt, float *step_size_set, float *beta, int *n, int *p, float *diff, int* gpu_isActive, int* isActive, int* numActive, int* gpu_numActive, int* gpu_indices, int *indices,float* gpu_AX, float* gpu_Abeta, float* gpu_AoldBeta, float* gpu_Agrad, float* gpu_Adiff, float* Abeta, float* Adiff){
   
-    int i = 0;
-    int j = 0;
-    int count = 0;
+  int count = 0;
   int cont = 1;
   int inner_cont = 1; // inner loop variable (for active set)
   float step = 0;
@@ -273,7 +272,7 @@ extern "C"{
     
   }
   step_size_set[0] = init_step;
-  Rprintf("%u ", count);
+  //Rprintf("%u ", count);
   }
   
  
@@ -284,7 +283,7 @@ void activePathSol(float* X, float* y, int* n, int* p, int* maxIt, float* thresh
 
   int number_of_devices;
   cudaGetDeviceCount(&number_of_devices);
-  Rprintf("%u ", number_of_devices);
+  //Rprintf("%u ", number_of_devices);
   cudaSetDevice(0);
 
   int i,j;

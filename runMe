@@ -1,6 +1,0 @@
-rm GPUlassoPath.so
-rm main.o
-
-nvcc -O2 -I/usr/share/R/include -Xcompiler "-fpic" -c main.cu
-
-nvcc -shared -lcublas -lcuda  main.o -o GPUlassoPath.so
