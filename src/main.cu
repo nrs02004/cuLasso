@@ -60,10 +60,10 @@ __global__ void softKernel(float *gpu_beta, float lambda, int p)
     if((gpu_beta[k] > -lambda) && (gpu_beta[k] < lambda)){
       gpu_beta[k] = 0;
     }
-    if(gpu_beta[k] > lambda){
+    else if(gpu_beta[k] > lambda){
       gpu_beta[k] = gpu_beta[k] - lambda;
     }
-    if(gpu_beta[k] < -lambda){
+    else if(gpu_beta[k] < -lambda){
       gpu_beta[k] = gpu_beta[k] + lambda;
     }
   }
@@ -136,8 +136,8 @@ extern "C"{
 
     for(i=0; i<p[0];i++){
       if(isActive[i] != 0){
-	indices[counter] = i;
-	counter++;
+	    indices[counter] = i;
+	    counter++;
       }
     }
     numActive[0] = counter;
