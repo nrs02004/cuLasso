@@ -1,0 +1,17 @@
+Package: RGPULasso
+Maintainer: Noah Simon <nsimon@stanford.edu>
+Author: Noah Simon
+Version: 0.1
+License: GPL-3
+Title: RGPULasso
+Description: CUDA acceleration to compute the lasso
+Suggests:
+    testthat,
+    roxygen2
+Depends:
+    Rcpp,
+    RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo
+Collate:
+    'RGPULasso-package.r'
+    'GPULassoPath.R'
